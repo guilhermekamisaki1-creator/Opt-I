@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lentes e Equação de Gauss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3EEE3; --surface:#FBF8F2; --surface-2:#EDE6D6; --ink:#1D2130; --ink-2:#434859; --muted:#6A6C76;
+  --line:#D9CFBB; --line-soft:#E7DFCF;
+  --lens:#2A54A0; --lens-soft:#E2E9F6; --ray:#BA2C43; --ray-soft:#F6E0E3; --obj:#1C744A; --obj-soft:#DCEFE3;
+  --warn:#8F5205; --warn-soft:#F6E8CF; --bad:#AE2438; --bad-soft:#F7DEE2;
+  --code-bg:#1D2130; --code-ink:#EFE9DC; --code-accent:#A9C2F5;
+  --btn-ink:#FFFFFF; --rule:rgba(42,84,160,.11); --margin:rgba(186,44,67,.28);
+  --shadow:0 1px 0 rgba(29,33,48,.04), 0 10px 26px -18px rgba(29,33,48,.35);
+  --f-display:"Fraunces", Georgia, "Times New Roman", serif;
+  --f-body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#14161C; --surface:#1B1E27; --surface-2:#232734; --ink:#ECE7DB; --ink-2:#C6C2B8; --muted:#9C9A91;
+    --line:#333849; --line-soft:#282C38;
+    --lens:#8FAEF0; --lens-soft:#1D2841; --ray:#F2808F; --ray-soft:#3A1E25; --obj:#6BCB96; --obj-soft:#17301F;
+    --warn:#E8AE55; --warn-soft:#352914; --bad:#F2808F; --bad-soft:#3A1E25;
+    --code-bg:#0E1015; --code-ink:#ECE7DB; --code-accent:#8FAEF0;
+    --btn-ink:#1A0D10; --rule:rgba(143,174,240,.07); --margin:rgba(242,128,143,.25);
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 26px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14161C; --surface:#1B1E27; --surface-2:#232734; --ink:#ECE7DB; --ink-2:#C6C2B8; --muted:#9C9A91;
+  --line:#333849; --line-soft:#282C38;
+  --lens:#8FAEF0; --lens-soft:#1D2841; --ray:#F2808F; --ray-soft:#3A1E25; --obj:#6BCB96; --obj-soft:#17301F;
+  --warn:#E8AE55; --warn-soft:#352914; --bad:#F2808F; --bad-soft:#3A1E25;
+  --code-bg:#0E1015; --code-ink:#ECE7DB; --code-accent:#8FAEF0;
+  --btn-ink:#1A0D10; --rule:rgba(143,174,240,.07); --margin:rgba(242,128,143,.25);
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 26px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important; animation:none!important} }
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.68; margin:0}
+a{color:var(--lens); text-underline-offset:3px}
+:focus-visible{outline:2.5px solid var(--lens); outline-offset:3px; border-radius:4px}
+strong{font-weight:700}
+i.v, .v{font-family:var(--f-display); font-style:italic; font-weight:600}
+sub,sup{line-height:0}
+
+/* progress */
+.progress{position:fixed; left:0; top:env(safe-area-inset-top,0px); height:3px; width:100%; z-index:50; background:transparent}
+.progress span{display:block; height:100%; width:0; background:var(--ray); transform-origin:left}
+
+/* hero */
+.hero{position:relative; padding-inline:clamp(16px,4vw,40px); padding-block:clamp(36px,6vw,64px) clamp(30px,5vw,48px);
+  background:repeating-linear-gradient(to bottom, transparent 0 33px, var(--rule) 33px 34px), var(--surface);
+  border-bottom:1px solid var(--line)}
+.hero::before{content:""; position:absolute; top:0; bottom:0; left:clamp(8px,2.2vw,26px); width:2px; background:var(--margin)}
+.hero-in{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:32px 48px; align-items:center}
+.eyebrow{font:600 .76rem/1.4 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--ray)}
+.hero h1{font-family:var(--f-display); font-weight:700; font-size:clamp(2.1rem,5.2vw,3.5rem); line-height:1.05; letter-spacing:-.02em; margin:.35em 0 .4em; text-wrap:balance}
+.hero h1 em{font-style:italic; font-weight:400; color:var(--lens)}
+.lead{font-size:1.1rem; color:var(--ink-2); max-width:58ch; margin:0}
+.meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; padding:0; list-style:none}
+.meta li{font:500 .8rem/1 var(--f-mono); padding:8px 11px; border:1px solid var(--line); border-radius:999px; background:var(--bg); color:var(--ink-2)}
+.hero-card{background:var(--code-bg); color:var(--code-ink); border-radius:16px; padding:26px 26px 22px; box-shadow:var(--shadow)}
+.hero-card .cap{font:600 .72rem/1.3 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--code-accent)}
+.hero-card .big{font-family:var(--f-display); font-size:clamp(1.9rem,4vw,2.5rem); margin:8px 0 14px; line-height:1.3}
+.hero-card .row{border-top:1px solid rgba(255,255,255,.12); padding-top:12px; margin-top:4px; display:grid; gap:4px; font-size:.95rem}
+.hero-card .row span{color:var(--code-accent); font-family:var(--f-mono); font-size:.8rem}
+@media (max-width:860px){ .hero-in{grid-template-columns:minmax(0,1fr)} }
+
+/* fractions */
+.frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .12em; line-height:1.12}
+.frac>span:first-child{border-bottom:.07em solid currentColor; padding:0 .18em .04em}
+.frac>span:last-child{padding:.04em .18em 0}
+
+/* shell */
+.shell{max-width:1180px; margin:0 auto; padding-inline:clamp(16px,4vw,40px); display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px}
+.toc{position:sticky; top:calc(env(safe-area-inset-top,0px) + 20px); align-self:start; padding-block:36px; max-height:calc(100vh - 40px); overflow:auto}
+.toc h2{font:600 .72rem/1 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0 0 14px}
+.toc ol{list-style:none; margin:0; padding:0; display:grid; gap:2px; counter-reset:t}
+.toc a{display:grid; grid-template-columns:26px 1fr; align-items:baseline; padding:7px 10px; border-radius:8px; color:var(--ink-2); text-decoration:none; font-size:.93rem; line-height:1.35}
+.toc a span{font:600 .72rem var(--f-mono); color:var(--muted)}
+.toc a:hover{background:var(--surface-2); color:var(--ink)}
+.toc a.on{background:var(--lens-soft); color:var(--lens); font-weight:600}
+.toc a.on span{color:var(--lens)}
+main{min-width:0; max-width:780px; padding-bottom:80px}
+@media (max-width:980px){
+  .shell{grid-template-columns:minmax(0,1fr); gap:0}
+  .toc{top:env(safe-area-inset-top,0px); z-index:40; background:var(--bg); padding-block:10px; border-bottom:1px solid var(--line); max-height:none; overflow-x:auto; overflow-y:hidden}
+  .toc h2{display:none}
+  .toc ol{display:flex; gap:6px; width:max-content}
+  .toc a{display:flex; gap:6px; white-space:nowrap; padding:7px 11px; border:1px solid var(--line); border-radius:999px; font-size:.85rem}
+}
+
+/* sections */
+section.sec{padding-block:60px 10px; border-top:1px solid var(--line); scroll-margin-top:70px}
+section.sec:first-child{border-top:0}
+.sec-label{font:600 .74rem/1 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--ray); margin:0 0 10px}
+h2.sec-title{font-family:var(--f-display); font-weight:600; font-size:clamp(1.75rem,3.4vw,2.35rem); line-height:1.12; letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance}
+h3{font-family:var(--f-display); font-weight:600; font-size:1.42rem; line-height:1.25; margin:2.4em 0 .6em; text-wrap:balance; scroll-margin-top:70px}
+h3 .n{font:600 .8rem var(--f-mono); color:var(--muted); margin-right:8px; vertical-align:.15em}
+h4{font-size:1.02rem; font-weight:700; margin:1.6em 0 .4em}
+p{margin:.75em 0; max-width:68ch}
+ul,ol{padding-left:1.25em; max-width:68ch}
+li{margin:.3em 0}
+li::marker{color:var(--muted)}
+hr.soft{border:0; border-top:1px dashed var(--line); margin:32px 0}
+
+/* callouts */
+.box{border-radius:12px; padding:16px 20px; margin-block:22px; background:var(--surface); border:1px solid var(--line)}
+.box>:first-child{margin-top:0} .box>:last-child{margin-bottom:0}
+.box .tag{display:block; font:600 .72rem/1.3 var(--f-mono); letter-spacing:.09em; text-transform:uppercase; margin-bottom:8px}
+.box.comp{background:var(--lens-soft); border-color:transparent} .box.comp .tag{color:var(--lens)}
+.box.warn{background:var(--warn-soft); border-color:transparent} .box.warn .tag{color:var(--warn)}
+.box.cad{background:var(--obj-soft); border-color:transparent} .box.cad .tag{color:var(--obj)}
+.box.doubt{background:transparent; border:1.5px dashed var(--line)} .box.doubt .tag{color:var(--muted)}
+.box.exam{background:var(--ray-soft); border-color:transparent} .box.exam .tag{color:var(--ray)}
+
+/* formulas */
+.formula{background:var(--code-bg); color:var(--code-ink); border-radius:14px; padding:22px 24px; margin-block:22px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px 28px}
+.formula .eq{font-family:var(--f-display); font-size:clamp(1.55rem,4vw,2.15rem); line-height:1.35}
+.formula .eq i{font-style:italic}
+.formula .cap{font:600 .74rem/1.5 var(--f-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--code-accent); max-width:24ch}
+pre.calc{font-family:var(--f-mono); font-size:.9rem; line-height:1.85; background:var(--surface-2); color:var(--ink); border-radius:10px; padding:14px 18px; margin:14px 0; overflow-x:auto; white-space:pre}
+pre.calc b{color:var(--lens); font-weight:600}
+pre.calc em{font-style:normal; color:var(--ray); font-weight:600}
+@media (max-width:560px){ pre.calc{font-size:.8rem; padding:12px 14px} pre.diagram{font-size:.74rem} }
+pre.diagram{font-family:var(--f-mono); font-size:.84rem; line-height:1.55; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px; overflow-x:auto; white-space:pre; color:var(--ink)}
+code, .mono{font-family:var(--f-mono); font-size:.9em}
+
+/* tables */
+.tbl{overflow-x:auto; margin-block:20px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+.tbl table{border-collapse:collapse; width:100%; min-width:540px; font-size:.95rem; line-height:1.5}
+.tbl th,.tbl td{padding:10px 14px; border-bottom:1px solid var(--line-soft); text-align:left; vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl thead th{font:600 .72rem/1.3 var(--f-mono); letter-spacing:.07em; text-transform:uppercase; color:var(--muted); background:var(--surface-2)}
+.tbl td.k{font-family:var(--f-display); font-weight:600; white-space:nowrap}
+.tbl .hl td{background:var(--obj-soft)}
+.sg{display:inline-block; font:600 .82rem/1.3 var(--f-mono); padding:1px 8px; border-radius:999px; border:1px solid currentColor; white-space:nowrap}
+.sg.p{color:var(--obj)} .sg.m{color:var(--ray)}
+
+/* figures */
+figure{margin:24px 0}
+figcaption{font-size:.86rem; color:var(--muted); margin-top:8px}
+.fig-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:10px}
+.fig-wrap svg{display:block; width:100%; min-width:560px; height:auto}
+.lens-pair{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0}
+.lens-card{border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:16px; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center}
+.lens-card svg{width:92px; height:auto}
+.lens-card h4{margin:0 0 4px}
+.lens-card p{margin:0; font-size:.92rem; color:var(--ink-2)}
+@media (max-width:560px){ .lens-pair{grid-template-columns:minmax(0,1fr)} }
+
+/* svg text & strokes (shared) */
+.s-ax{stroke:var(--muted); stroke-width:1.5}
+.s-tick{stroke:var(--muted); stroke-width:1.5}
+.s-lens{stroke:var(--lens); stroke-width:3; fill:none; stroke-linecap:round}
+.s-lensfill{fill:var(--lens-soft); stroke:var(--lens); stroke-width:2}
+.s-ray{stroke:var(--ray); stroke-width:2.2; fill:none; stroke-linecap:round}
+.s-ray3{stroke:var(--ray); stroke-width:1.8; fill:none; opacity:.5}
+.s-dash{stroke-dasharray:7 6}
+.s-obj{stroke:var(--obj); stroke-width:3; fill:none; stroke-linecap:round}
+.s-objfill{fill:var(--obj)}
+.s-rayfill{fill:var(--ray)}
+.s-lensfillsolid{fill:var(--lens)}
+.s-mutedfill{fill:var(--muted)}
+.t-lbl{fill:var(--ink-2); font:600 15px var(--f-mono)}
+.t-sm{fill:var(--muted); font:500 13px var(--f-body)}
+.t-md{fill:var(--ink); font:600 15px var(--f-body)}
+.t-lens{fill:var(--lens); font:600 15px var(--f-mono)}
+.t-ray{fill:var(--ray); font:600 14px var(--f-mono)}
+.t-obj{fill:var(--obj); font:600 15px var(--f-mono)}
+
+/* exercises */
+.ex{border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-block:26px; overflow:hidden; box-shadow:var(--shadow); scroll-margin-top:70px}
+.ex-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; padding:14px 20px; background:var(--surface-2); border-bottom:1px solid var(--line-soft)}
+.ex-num{font-family:var(--f-display); font-weight:700; font-size:1.55rem; line-height:1}
+.ex-topic{color:var(--ink-2); font-weight:600}
+.ex-ans{margin-left:auto; font:600 .78rem/1.3 var(--f-mono); padding:5px 10px; border-radius:999px; background:var(--lens-soft); color:var(--lens)}
+.ex-body{padding:6px 20px 20px}
+.stmt{font-style:italic; color:var(--ink-2)}
+.verdict{border-radius:10px; padding:12px 16px; margin-top:14px; font-size:.95rem; line-height:1.6}
+.v-ok{background:var(--obj-soft)} .v-ok b{color:var(--obj)}
+.v-warn{background:var(--warn-soft)} .v-warn b{color:var(--warn)}
+.v-bad{background:var(--bad-soft)} .v-bad b{color:var(--bad)}
+.v-none{background:var(--surface-2)} .v-none b{color:var(--muted)}
+
+/* simulator */
+.lab{border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:var(--shadow); overflow:hidden; margin-block:22px}
+.lab-controls{display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line-soft); background:var(--surface-2)}
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
+.seg button{font:600 .88rem var(--f-body); padding:9px 14px; border:0; background:transparent; color:var(--ink-2); cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--lens); color:var(--btn-ink)}
+.slider{display:grid; gap:4px; flex:1 1 260px; font-size:.9rem; color:var(--ink-2)}
+.slider b{font-family:var(--f-mono); color:var(--ink); font-variant-numeric:tabular-nums}
+.slider input{width:100%; accent-color:var(--lens)}
+.presets{display:flex; flex-wrap:wrap; gap:6px}
+.presets button{font:500 .8rem var(--f-body); padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); cursor:pointer}
+.presets button:hover{border-color:var(--lens); color:var(--lens)}
+.check{display:flex; align-items:center; gap:8px; font-size:.88rem; color:var(--ink-2)}
+.check input{accent-color:var(--lens); width:16px; height:16px}
+.lab-canvas{overflow-x:auto}
+.lab-canvas svg{display:block; width:100%; min-width:620px; height:auto}
+.readout{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid var(--line-soft)}
+.readout div{padding:12px 16px; border-right:1px solid var(--line-soft); display:grid; gap:2px}
+.readout div:last-child{border-right:0}
+.readout span{font:italic 600 1rem var(--f-display); color:var(--muted)}
+.readout b{font:600 1.15rem var(--f-mono); font-variant-numeric:tabular-nums}
+@media (max-width:560px){
+  .readout{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .readout div:nth-child(2){border-right:0}
+  .readout div:nth-child(-n+2){border-bottom:1px solid var(--line-soft)}
+}
+.chips{display:flex; flex-wrap:wrap; gap:8px; padding:14px 18px 0}
+.chip{font:600 .8rem/1.2 var(--f-mono); padding:5px 11px; border-radius:999px; border:1.5px solid currentColor}
+.chip.real{color:var(--obj)} .chip.virt{color:var(--lens); border-style:dashed} .chip.inv{color:var(--ray)} .chip.dir{color:var(--obj)} .chip.size{color:var(--ink-2)} .chip.inf{color:var(--warn)}
+.case{padding-inline:18px; margin:10px 0 16px; max-width:none}
+.note{margin:-6px 18px 16px; font-size:.9rem; color:var(--warn); max-width:none}
+
+/* traps */
+ol.traps{list-style:none; padding:0; counter-reset:tr; display:grid; gap:10px; max-width:none; margin:20px 0}
+ol.traps li{counter-increment:tr; display:grid; grid-template-columns:36px minmax(0,1fr); column-gap:10px; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:var(--surface); margin:0}
+ol.traps li::before{content:counter(tr, decimal-leading-zero); font:600 .85rem/1.6 var(--f-mono); color:var(--ray); grid-row:span 2}
+ol.traps b{display:block; line-height:1.45}
+ol.traps p{margin:4px 0 0; font-size:.95rem; color:var(--ink-2)}
+
+/* videos */
+.vid{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px 18px; align-items:center; padding:16px 18px; border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-block:10px}
+.vid .ch{font:600 .72rem/1.3 var(--f-mono); letter-spacing:.07em; text-transform:uppercase; color:var(--muted)}
+.vid h5{font-family:var(--f-display); font-size:1.06rem; font-weight:600; margin:3px 0 4px; line-height:1.3}
+.vid p{margin:0; font-size:.92rem; color:var(--ink-2)}
+.btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:var(--ray); color:var(--btn-ink); font-weight:700; font-size:.9rem; text-decoration:none; white-space:nowrap}
+.btn svg{width:14px; height:14px; fill:currentColor}
+.btn:hover{filter:brightness(1.08)}
+@media (max-width:600px){ .vid{grid-template-columns:minmax(0,1fr)} .btn{justify-self:start} }
+
+/* review */
+.sumgrid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:20px 0}
+.sumcard{border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:16px 18px}
+.sumcard h4{margin:0 0 6px; font-family:var(--f-mono); font-size:.74rem; letter-spacing:.09em; text-transform:uppercase; color:var(--lens)}
+.sumcard .eq{font-family:var(--f-display); font-size:1.45rem; margin:4px 0 8px}
+.sumcard p, .sumcard ul{margin:0; font-size:.93rem; color:var(--ink-2)}
+.sumcard ul{padding-left:1.1em}
+@media (max-width:620px){ .sumgrid{grid-template-columns:minmax(0,1fr)} }
+details.q{border:1px solid var(--line); border-radius:12px; background:var(--surface); margin-block:10px}
+details.q summary{cursor:pointer; padding:14px 18px; font-weight:600; list-style:none; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:baseline}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::after{content:"ver resposta"; font:600 .72rem var(--f-mono); letter-spacing:.06em; text-transform:uppercase; color:var(--lens)}
+details.q[open] summary::after{content:"fechar"}
+details.q .ans{padding:0 18px 16px; color:var(--ink-2)}
+details.q .ans pre.calc{margin-top:0}
+.grade{display:grid; grid-template-columns:auto minmax(0,1fr); gap:18px 24px; align-items:center; background:var(--code-bg); color:var(--code-ink); border-radius:14px; padding:22px 24px; margin:22px 0}
+.grade .n{font-family:var(--f-display); font-size:3.2rem; font-weight:700; line-height:1}
+.grade .n small{font-size:1.2rem; font-weight:400; opacity:.7}
+.grade .cap{font:600 .72rem/1.4 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--code-accent)}
+.grade p{margin:4px 0 0; max-width:none}
+.foot{margin-top:56px; padding-top:20px; border-top:1px solid var(--line); font-size:.85rem; color:var(--muted)}
+
+@media print{
+  .toc,.progress,.lab-controls{display:none!important}
+  .shell{display:block}
+  body,.hero{background:#fff}
+  .ex,.box,.formula,.vid,details.q,figure{break-inside:avoid}
+  a.btn::after{content:" (" attr(href) ")"; font-weight:400}
+}
+</style>
+</head>
+<body>
+
+
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+
+<header class="hero">
+  <div class="hero-in">
+    <div>
+      <div class="eyebrow">Física · Óptica geométrica · 2º ano EM</div>
+      <h1>Lentes esféricas: <em>Equação de Gauss</em> e aumento linear</h1>
+      <p class="lead">Aula completa montada a partir das suas anotações (Obs., Referencial de Gauss, Equação de Gauss e Aumento linear) e da sua lista (questões 7 a 13), com a correção do que você já resolveu no caderno.</p>
+      <ul class="meta">
+        <li>Base: 2 páginas do caderno + 2 da lista</li>
+        <li>Pré-requisito: refração</li>
+        <li>Foco: FUVEST · Unicamp · Unesp</li>
+      </ul>
+    </div>
+    <div class="hero-card" aria-label="Resumo das duas equações da aula">
+      <div class="cap">As duas equações da aula</div>
+      <div class="big">
+        <span class="frac"><span>1</span><span><i>f</i></span></span> =
+        <span class="frac"><span>1</span><span><i>p</i></span></span> +
+        <span class="frac"><span>1</span><span><i>p'</i></span></span>
+      </div>
+      <div class="big" style="margin-top:0">
+        <i>A</i> = <span class="frac"><span><i>i</i></span><span><i>o</i></span></span> =
+        <span class="frac"><span>−<i>p'</i></span><span><i>p</i></span></span>
+      </div>
+      <div class="row"><span>Gauss</span>diz ONDE a imagem se forma.</div>
+      <div class="row"><span>Aumento</span>diz COMO ela é: tamanho e orientação.</div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Sumário da aula">
+    <h2>Sumário</h2>
+    <ol>
+      <li><a href="#visao"><span>01</span>Visão geral</a></li>
+      <li><a href="#explicacao"><span>02</span>Explicação completa</a></li>
+      <li><a href="#exemplos"><span>03</span>Exemplos e sua lista</a></li>
+      <li><a href="#esquemas"><span>04</span>Esquemas e simulador</a></li>
+      <li><a href="#pegadinhas"><span>05</span>Pegadinhas</a></li>
+      <li><a href="#prova"><span>06</span>O que mais cai</a></li>
+      <li><a href="#videos"><span>07</span>Vídeos</a></li>
+      <li><a href="#revisao"><span>08</span>Revisão final</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+<!-- ============ 01 VISÃO GERAL ============ -->
+<section class="sec" id="visao">
+  <p class="sec-label">01 · Visão geral do tema</p>
+  <h2 class="sec-title">Trocar o desenho pela conta</h2>
+
+  <p>Uma <strong>lente</strong> é um pedaço de material transparente (vidro, acrílico) que desvia a luz por <strong>refração</strong>. Por causa desse desvio, quando você olha um objeto através de uma lente, ou projeta a luz dela numa parede, aparece uma <strong>imagem</strong> do objeto.</p>
+
+  <p>Existem dois jeitos de descobrir onde e como essa imagem aparece:</p>
+  <ul>
+    <li><strong>Método gráfico:</strong> desenhar raios de luz e ver onde eles se cruzam. É o desenho que você fez no caderno, com os raios em vermelho.</li>
+    <li><strong>Método analítico:</strong> fazer contas. É o assunto central das suas anotações: a <strong>Equação de Gauss</strong>, o <strong>aumento linear</strong> e as <strong>regras de sinal</strong> (Referencial de Gauss).</li>
+  </ul>
+
+  <p>O método analítico responde três perguntas com poucas linhas de conta:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Ferramenta</th><th>Pergunta que responde</th><th>Onde aparece na sua lista</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1/f = 1/p + 1/p'</td><td>Onde a imagem se forma (p')? Onde pôr o objeto (p)? Qual é a lente (f)?</td><td>Todas (Q7 a Q13)</td></tr>
+      <tr><td class="k">A = i/o</td><td>Quantas vezes maior ou menor? Qual o tamanho da imagem?</td><td>Q10b</td></tr>
+      <tr><td class="k">A = −p'/p</td><td>Liga a posição da imagem com o tamanho dela</td><td>Q10, Q11, Q12, Q13</td></tr>
+      <tr><td class="k">Sinais (+/−)</td><td>Imagem real ou virtual? Direita ou invertida? Lente convergente ou divergente?</td><td>Q10b, Q12</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Mapa da aula</h4>
+<pre class="diagram">Elementos da lente ─► Raios notáveis ─► Referencial de Gauss (sinais)
+                                               │
+          ┌────────────────────────────────────┘
+          ▼
+   Equação de Gauss ─► Aumento linear ─► Classificar a imagem
+          │                                     │
+          └──────────► Casos de formação ◄──────┘
+                              │
+                              ▼
+               Método de resolução ─► Sua lista (Q7–Q13)</pre>
+</section>
+
+<!-- ============ 02 EXPLICAÇÃO ============ -->
+<section class="sec" id="explicacao">
+  <p class="sec-label">02 · Explicação completa</p>
+  <h2 class="sec-title">Do vocabulário ao método de resolução</h2>
+
+  <!-- 2.1 -->
+  <h3 id="t-elementos"><span class="n">2.1</span>Os elementos de uma lente</h3>
+  <p>No seu desenho da Equação de Gauss aparecem várias letras sobre uma linha tracejada. Cada uma tem um nome e uma função:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Símbolo</th><th>Nome</th><th>O que é</th></tr></thead>
+    <tbody>
+      <tr><td class="k">E.O.</td><td>Eixo óptico (eixo principal)</td><td>A linha tracejada horizontal que passa pelo meio da lente. Todas as distâncias (p, p', f) são medidas ao longo dela.</td></tr>
+      <tr><td class="k">O</td><td>Centro óptico</td><td>O ponto onde o eixo cruza a lente. É a origem das medidas: p e p' são medidos <strong>a partir de O</strong>, nunca a partir do foco.</td></tr>
+      <tr><td class="k">F e F'</td><td>Focos</td><td>Pontos no eixo, um de cada lado, à distância f da lente. No seu desenho, o trecho "1f" vai de F até O.</td></tr>
+      <tr><td class="k">A (e A')</td><td>Pontos antiprincipais</td><td>Pontos a 2f da lente. O "A" do seu desenho está do lado do objeto; o A' fica simétrico, do outro lado.</td></tr>
+      <tr><td class="k">o</td><td>Tamanho do objeto</td><td>Altura do objeto (você escreve como θ, uma bolinha cortada).</td></tr>
+      <tr><td class="k">i</td><td>Tamanho da imagem</td><td>Altura da imagem.</td></tr>
+      <tr><td class="k">p</td><td>Abscissa do objeto</td><td>Distância do objeto até a lente.</td></tr>
+      <tr><td class="k">p'</td><td>Abscissa da imagem</td><td>Distância da imagem até a lente.</td></tr>
+      <tr><td class="k">f</td><td>Distância focal</td><td>Distância do foco até a lente.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão:</span>
+    <p><strong>F' (foco imagem)</strong> é o ponto onde se cruzam os raios que chegam paralelos ao eixo, depois de atravessar uma lente convergente. <strong>F (foco objeto)</strong> é o ponto simétrico, do lado de onde a luz vem. As equações desta aula valem para <strong>lentes delgadas</strong>, ou seja, lentes cuja espessura é pequena perto das distâncias envolvidas. Nos vestibulares, toda lente é considerada delgada, a menos que o enunciado diga o contrário.</p>
+    <p><strong>Cuidado com a letra A:</strong> ela é usada para o <em>ponto antiprincipal</em> (no desenho) e para o <em>aumento linear</em> (na fórmula). O contexto diz qual é qual.</p>
+  </div>
+
+  <h4>Convergente ou divergente</h4>
+  <p>Das suas Obs.: <span class="sg p">f &gt; 0</span> lente <strong>convergente</strong>; <span class="sg m">f &lt; 0</span> lente <strong>divergente</strong>. O sinal de f é a "identidade" da lente.</p>
+
+  <div class="lens-pair">
+    <div class="lens-card">
+      <svg viewBox="0 0 120 120" role="img" aria-label="Lente convergente: perfil de bordas finas e símbolo com setas para fora">
+        <path d="M35 8 Q62 60 35 112 Q8 60 35 8 Z" class="s-lensfill"/>
+        <line x1="92" y1="12" x2="92" y2="108" class="s-lens"/>
+        <polyline points="83,22 92,12 101,22" class="s-lens"/>
+        <polyline points="83,98 92,108 101,98" class="s-lens"/>
+      </svg>
+      <div><h4>Convergente (f &gt; 0)</h4><p>Junta os raios paralelos num ponto real, o foco F'. Símbolo: setas para fora, como no seu caderno.</p></div>
+    </div>
+    <div class="lens-card">
+      <svg viewBox="0 0 120 120" role="img" aria-label="Lente divergente: perfil de bordas grossas e símbolo com setas para dentro">
+        <path d="M16 8 L54 8 Q38 60 54 112 L16 112 Q32 60 16 8 Z" class="s-lensfill"/>
+        <line x1="92" y1="12" x2="92" y2="108" class="s-lens"/>
+        <polyline points="83,2 92,12 101,2" class="s-lens"/>
+        <polyline points="83,118 92,108 101,118" class="s-lens"/>
+      </svg>
+      <div><h4>Divergente (f &lt; 0)</h4><p>Espalha os raios paralelos; eles parecem sair de um foco virtual. Símbolo: setas para dentro.</p></div>
+    </div>
+  </div>
+
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão:</span>
+    <p>Como reconhecer pelo formato, no caso comum (lente de vidro ou acrílico <strong>no ar</strong>, ou seja, índice de refração da lente maior que o do meio):</p>
+    <ul>
+      <li><strong>Bordas finas → convergente:</strong> biconvexa, plano-convexa, côncavo-convexa.</li>
+      <li><strong>Bordas grossas → divergente:</strong> bicôncava, plano-côncava, convexo-côncava.</li>
+    </ul>
+    <p>Se a lente tiver índice <strong>menor</strong> que o meio (por exemplo, uma bolha de ar dentro da água), o comportamento se inverte. Isso importa na Q9: "lente biconvexa" só é convergente porque está implícito que ela está no ar.</p>
+  </div>
+
+  <!-- 2.2 -->
+  <h3 id="t-raios"><span class="n">2.2</span>Raios notáveis: como o seu desenho foi construído</h3>
+  <p>Para achar a imagem pelo desenho, basta seguir <strong>dois raios</strong> que saem da ponta do objeto. Onde eles (ou os prolongamentos deles) se cruzam, está a ponta da imagem. No seu caderno você usou exatamente estes dois:</p>
+  <ol>
+    <li><strong>Raio paralelo ao eixo</strong> → depois da lente, <strong>passa pelo foco F'</strong>.</li>
+    <li><strong>Raio que passa pelo centro óptico O</strong> → <strong>atravessa sem desviar</strong>.</li>
+  </ol>
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão:</span>
+    <p>Existe um terceiro raio notável: o raio que <strong>passa pelo foco F</strong> (antes da lente) <strong>sai paralelo</strong> ao eixo. É o caminho inverso do raio 1. Na lente <strong>divergente</strong>, o raio paralelo sai "abrindo", e é o <strong>prolongamento</strong> dele (linha tracejada, para trás) que passa pelo foco.</p>
+  </div>
+
+  <figure>
+    <div class="fig-wrap"><svg class="ray-static" data-type="conv" data-p="25" viewBox="0 0 900 340" role="img" aria-label="Lente convergente com objeto além do ponto antiprincipal A: imagem real, invertida e menor entre F' e A'"></svg></div>
+    <figcaption>Reconstrução do seu desenho, em escala (f = 10 cm, objeto a 25 cm): objeto em verde além de A, raios em vermelho, imagem real, invertida e menor entre F' e A'. O raio mais claro é o 3º raio notável.</figcaption>
+  </figure>
+
+  <div class="box cad">
+    <span class="tag">Do seu caderno: leitura do desenho</span>
+    <p>O objeto está um pouco antes do ponto A (p &gt; 2f) e a imagem foi desenhada entre F' e A', invertida e menor. Está coerente: é o caso da câmera fotográfica. O desenho é qualitativo, fora de escala, e isso é normal no caderno.</p>
+    <p>Se o objeto estivesse <strong>exatamente sobre A</strong>, a imagem ficaria exatamente sobre A' e teria o <strong>mesmo tamanho</strong> do objeto. Como você desenhou a imagem menor, o caso representado é p &gt; 2f.</p>
+  </div>
+
+  <!-- 2.3 -->
+  <h3 id="t-referencial"><span class="n">2.3</span>Referencial de Gauss: o sinal carrega informação</h3>
+  <p>A ideia de Gauss foi colocar um sistema de eixos na lente, com a origem no centro óptico O:</p>
+  <ul>
+    <li>o eixo <strong>horizontal</strong> (ao longo do E.O.) mede posições: <span class="v">p</span>, <span class="v">p'</span>, <span class="v">f</span>;</li>
+    <li>o eixo <strong>vertical</strong> mede alturas: <span class="v">o</span> e <span class="v">i</span>.</li>
+  </ul>
+  <p>Assim, o número que sai da conta tem duas partes: o <strong>valor</strong> diz "quanto" e o <strong>sinal</strong> diz "de que tipo". Esta é a tabela das suas Obs., organizada:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Grandeza</th><th>Sinal +</th><th>Sinal −</th></tr></thead>
+    <tbody>
+      <tr><td class="k">f</td><td><span class="sg p">+</span> lente convergente</td><td><span class="sg m">−</span> lente divergente</td></tr>
+      <tr><td class="k">p'</td><td><span class="sg p">+</span> imagem <strong>real</strong></td><td><span class="sg m">−</span> imagem <strong>virtual</strong></td></tr>
+      <tr><td class="k">i</td><td><span class="sg p">+</span> imagem acima do eixo</td><td><span class="sg m">−</span> imagem abaixo do eixo</td></tr>
+      <tr><td class="k">A</td><td><span class="sg p">+</span> imagem <strong>direita</strong> (objeto e imagem apontam para o mesmo lado)</td><td><span class="sg m">−</span> imagem <strong>invertida</strong> (apontam para lados opostos)</td></tr>
+      <tr><td class="k">p <small>(complemento)</small></td><td><span class="sg p">+</span> objeto real (todos os da sua lista)</td><td><span class="sg m">−</span> objeto virtual (só em associação de lentes)</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>E a leitura do tamanho, também das suas Obs., usa o <strong>módulo</strong> de A:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Módulo de A</th><th>Comparação</th><th>Nome</th></tr></thead>
+    <tbody>
+      <tr><td class="k">|A| &gt; 1</td><td>|i| &gt; o</td><td>Ampliação (imagem maior)</td></tr>
+      <tr><td class="k">|A| &lt; 1</td><td>|i| &lt; o</td><td>Redução (imagem menor)</td></tr>
+      <tr><td class="k">|A| = 1</td><td>|i| = o</td><td>Mesmo tamanho</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure>
+    <div class="fig-wrap"><svg viewBox="0 0 640 290" role="img" aria-labelledby="refT">
+      <title id="refT">Referencial de Gauss para lentes, com a luz vindo da esquerda</title>
+      <line x1="20" y1="150" x2="620" y2="150" class="s-ax"/>
+      <text x="584" y="140" class="t-sm">E.O.</text>
+      <line x1="320" y1="40" x2="320" y2="260" class="s-lens"/>
+      <polyline points="310,52 320,40 330,52" class="s-lens"/>
+      <polyline points="310,248 320,260 330,248" class="s-lens"/>
+      <text x="327" y="170" class="t-lens">O</text>
+      <text x="336" y="60" class="t-obj">i &gt; 0 (acima)</text>
+      <text x="336" y="252" class="t-obj">i &lt; 0 (abaixo)</text>
+      <line x1="40" y1="84" x2="206" y2="84" class="s-ray"/>
+      <polygon points="206,77 220,84 206,91" class="s-rayfill"/>
+      <text x="40" y="70" class="t-ray">sentido da luz</text>
+      <text x="304" y="188" text-anchor="end" class="t-md">objeto real: p &gt; 0</text>
+      <text x="304" y="212" text-anchor="end" class="t-md">imagem virtual: p' &lt; 0</text>
+      <text x="304" y="236" text-anchor="end" class="t-sm">lado de onde a luz vem</text>
+      <text x="338" y="188" class="t-md">imagem real: p' &gt; 0</text>
+      <text x="338" y="212" class="t-sm">lado para onde a luz vai</text>
+    </svg></div>
+    <figcaption>Referencial de Gauss para <strong>lentes</strong>: a imagem real se forma do lado <strong>oposto</strong> ao objeto.</figcaption>
+  </figure>
+
+  <div class="box cad">
+    <span class="tag">Do seu caderno: dois ajustes nas Obs.</span>
+    <p><strong>1. O sentido de p' no seu esquema.</strong> No desenho do Referencial de Gauss, a seta de <span class="mono">p' ⊕</span> aponta para a esquerda e a de <span class="mono">p' ⊖</span> para a direita. Em lentes, com a luz vindo da esquerda (como no seu próprio desenho da Equação de Gauss, em que a imagem real aparece à direita), é o contrário: <strong>p' &gt; 0 fica do lado oposto ao objeto</strong>. O arranjo que você desenhou é o de <strong>espelhos esféricos</strong>, em que a imagem real se forma na frente do espelho, do mesmo lado do objeto. Pode ter sido uma mistura com o referencial de espelhos, ou o professor desenhou a luz vindo da direita. Vale confirmar com ele.</p>
+    <p>Regra que não depende do desenho: <strong>lente</strong> → imagem real do lado oposto ao objeto; <strong>espelho</strong> → imagem real do mesmo lado do objeto.</p>
+    <p><strong>2. "i &gt; 0" nas linhas de |A|.</strong> Na foto, parece estar escrito <span class="mono">i &gt; 0</span>, <span class="mono">i &lt; 0</span> e <span class="mono">i = 0</span>. Se o símbolo é a letra <em>o</em> (tamanho do objeto), está certo, mas precisa de módulo: <span class="mono">|i| &gt; o</span>. Se for o número zero, está errado: <span class="mono">i &gt; 0</span> quer dizer imagem direita, não imagem maior. Exemplo: com A = −3, o i é negativo e mesmo assim a imagem é 3 vezes maior.</p>
+  </div>
+
+  <!-- 2.4 -->
+  <h3 id="t-gauss"><span class="n">2.4</span>Equação de Gauss (equação dos pontos conjugados)</h3>
+
+  <div class="formula">
+    <div class="eq">
+      <span class="frac"><span>1</span><span><i>f</i></span></span> =
+      <span class="frac"><span>1</span><span><i>p</i></span></span> +
+      <span class="frac"><span>1</span><span><i>p'</i></span></span>
+    </div>
+    <div class="cap">Liga as 3 distâncias. Sabendo 2, você acha a 3ª.</div>
+  </div>
+
+  <h4>O que ela diz</h4>
+  <p>Para uma lente com distância focal f, cada posição do objeto (p) tem <strong>uma única</strong> posição de imagem (p'). Objeto e imagem são chamados de <strong>pontos conjugados</strong>: a lente "conjuga" um com o outro. É daí que vem a palavra "conjugada" na Q8.</p>
+
+  <h4>Por que ela funciona</h4>
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão: de onde sai a fórmula</span>
+    <p>Olhe o seu desenho e use semelhança de triângulos duas vezes (caso de imagem real):</p>
+    <ol>
+      <li><strong>Raio pelo centro O.</strong> O triângulo formado pelo objeto (altura o, base p) é semelhante ao triângulo da imagem (altura |i|, base p'). Logo: <span class="mono">|i| / o = p' / p</span>.</li>
+      <li><strong>Raio que sai por F'.</strong> Depois da lente, esse raio desce da altura o (na lente) até o eixo em F' (distância f) e continua até a ponta da imagem (distância p' − f além de F', profundidade |i|). Logo: <span class="mono">|i| / o = (p' − f) / f</span>.</li>
+    </ol>
+<pre class="calc">p'/p = (p' − f)/f
+p'·f = p·p' − p·f             (multiplica em cruz)
+<b>÷ (p·p'·f)</b>  →  1/p = 1/f − 1/p'
+                →  <em>1/f = 1/p + 1/p'</em></pre>
+    <p>Com o referencial de Gauss, a mesma equação continua valendo para imagens virtuais e para lentes divergentes: os sinais negativos fazem o ajuste sozinhos.</p>
+  </div>
+
+  <h4>Como aplicar: três técnicas</h4>
+  <p><strong>(a) MMC</strong>, como você fez na Q7:</p>
+<pre class="calc">1/6 = 1/30 + 1/p'
+1/p' = 1/6 − 1/30 = 5/30 − 1/30 = 4/30
+<em>p' = 30/4 = 7,5 cm</em>          ← inverta no final!</pre>
+
+  <p><strong>(b) "Produto sobre soma"</strong> (complemento, é a mesma equação reorganizada):</p>
+  <div class="formula">
+    <div class="eq" style="font-size:clamp(1.25rem,3.2vw,1.6rem)">
+      <i>f</i> = <span class="frac"><span><i>p</i> · <i>p'</i></span><span><i>p</i> + <i>p'</i></span></span>
+      &nbsp;&nbsp; <i>p'</i> = <span class="frac"><span><i>p</i> · <i>f</i></span><span><i>p</i> − <i>f</i></span></span>
+      &nbsp;&nbsp; <i>p</i> = <span class="frac"><span><i>p'</i> · <i>f</i></span><span><i>p'</i> − <i>f</i></span></span>
+    </div>
+  </div>
+  <p>Na Q7: p' = 30 · 6 / (30 − 6) = 180/24 = 7,5 cm. Mesmo resultado, sem MMC. Essas formas só valem com os sinais corretos já colocados.</p>
+
+  <p><strong>(c) Substituição:</strong> quando o enunciado dá o aumento, use A para escrever p' em função de p e jogue na Gauss (Q10, Q11, Q12, Q13). Está detalhado no método da seção 2.8.</p>
+
+  <h4>Como interpretar: a "gangorra" do foco</h4>
+  <p>Veja o que acontece com a imagem numa lente convergente de f = 10 cm quando o objeto se aproxima dela:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>p (cm)</th><th>p' (cm)</th><th>A = −p'/p</th><th>Leitura</th></tr></thead>
+    <tbody>
+      <tr><td class="k">40</td><td>13,3</td><td>−0,33</td><td>Real, invertida, 3 vezes menor</td></tr>
+      <tr><td class="k">30</td><td>15</td><td>−0,5</td><td>Real, invertida, metade do tamanho</td></tr>
+      <tr class="hl"><td class="k">20 (= 2f)</td><td>20</td><td>−1</td><td>Real, invertida, mesmo tamanho</td></tr>
+      <tr><td class="k">15</td><td>30</td><td>−2</td><td>Real, invertida, 2 vezes maior</td></tr>
+      <tr><td class="k">12</td><td>60</td><td>−5</td><td>Real, invertida, 5 vezes maior</td></tr>
+      <tr class="hl"><td class="k">10 (= f)</td><td>∞</td><td>—</td><td>Imagem imprópria (no infinito)</td></tr>
+      <tr><td class="k">5</td><td>−10</td><td>+2</td><td>Virtual, direita, 2 vezes maior</td></tr>
+    </tbody>
+  </table></div>
+  <p>Quanto mais o objeto se aproxima do foco, mais a imagem "foge" para longe e cresce. Quando o objeto passa para dentro do foco, p' vira negativo: a imagem muda de lado e passa a ser virtual.</p>
+
+  <div class="box warn">
+    <span class="tag">Erro clássico de fração</span>
+    <p><span class="mono">1/p + 1/p' ≠ 1/(p + p')</span>. Não dá para "juntar" os denominadores. Sempre MMC, ou use o produto sobre soma.</p>
+  </div>
+
+  <!-- 2.5 -->
+  <h3 id="t-aumento"><span class="n">2.5</span>Aumento linear transversal</h3>
+
+  <div class="formula">
+    <div class="eq">
+      <i>A</i> = <span class="frac"><span><i>i</i></span><span><i>o</i></span></span> =
+      <span class="frac"><span>−<i>p'</i></span><span><i>p</i></span></span>
+    </div>
+    <div class="cap">Quantas vezes a imagem é maior ou menor, e se é direita ou invertida</div>
+  </div>
+
+  <h4>As duas metades da fórmula</h4>
+  <ul>
+    <li><strong>A = i/o</strong> é a <strong>definição</strong>: compara a altura da imagem com a do objeto. Serve para achar o tamanho da imagem (i = A · o), como na Q10b.</li>
+    <li><strong>A = −p'/p</strong> vem dos triângulos semelhantes do raio pelo centro (|i|/o = p'/p). Serve para ligar posição com tamanho.</li>
+  </ul>
+
+  <h4>Por que existe o sinal de menos</h4>
+  <p>Numa lente convergente com objeto antes do foco, a imagem é <strong>real</strong> (p' &gt; 0) e aparece <strong>de cabeça para baixo</strong> (i &lt; 0), como no seu desenho. Então i/o tem que dar negativo. Mas p'/p daria positivo. O sinal de menos corrige isso: −p'/p fica negativo, igual a i/o.</p>
+
+  <h4>Como ler um valor de A</h4>
+<pre class="diagram">          A = − 20
+              │  │
+              │  └── módulo 20 → imagem 20 vezes MAIOR
+              └───── sinal −   → imagem INVERTIDA</pre>
+
+  <div class="tbl"><table>
+    <thead><tr><th>O enunciado diz…</th><th>Então A =</th><th>Questão</th></tr></thead>
+    <tbody>
+      <tr><td>"projetada na parede com ampliação de 20 vezes"</td><td class="k">−20</td><td>Q11</td></tr>
+      <tr><td>"imagem três vezes menor e direita"</td><td class="k">+1/3</td><td>Q12</td></tr>
+      <tr><td>lupa com "fator de ampliação 3,0" (imagem virtual e direita)</td><td class="k">+3</td><td>Q10</td></tr>
+      <tr><td>"na tela, imagem 4 vezes maior"</td><td class="k">−4</td><td>Q13</td></tr>
+      <tr><td>"na tela, imagem do mesmo tamanho"</td><td class="k">−1</td><td>Q9</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão: dois atalhos</span>
+    <p>Misturando Gauss com A = −p'/p, saem duas fórmulas que pulam uma etapa:</p>
+    <div class="formula" style="margin-block:12px">
+      <div class="eq" style="font-size:clamp(1.3rem,3.4vw,1.7rem)">
+        <i>A</i> = <span class="frac"><span><i>f</i></span><span><i>f</i> − <i>p</i></span></span>
+        &nbsp;&nbsp;&nbsp;
+        <i>A</i> = <span class="frac"><span><i>f</i> − <i>p'</i></span><span><i>f</i></span></span>
+      </div>
+    </div>
+    <p>A primeira usa só f e p. A segunda usa só f e p'. Na Q11 a segunda resolve em uma linha: −20 = (d − p')/d → −20d = d − p' → p' = 21d.</p>
+    <p>De onde vem a primeira: p' = pf/(p − f), então A = −p'/p = −f/(p − f) = f/(f − p).</p>
+  </div>
+
+  <!-- 2.6 -->
+  <h3 id="t-classificar"><span class="n">2.6</span>Classificando a imagem: três perguntas</h3>
+  <p>Toda questão sobre imagem pede, direta ou indiretamente, três classificações:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Pergunta</th><th>Quem responde</th><th>Opções</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Natureza</strong></td><td>sinal de p'</td><td>real (p' &gt; 0) ou virtual (p' &lt; 0)</td></tr>
+      <tr><td><strong>Orientação</strong></td><td>sinal de A (ou de i)</td><td>direita (A &gt; 0) ou invertida (A &lt; 0)</td></tr>
+      <tr><td><strong>Tamanho</strong></td><td>módulo de A</td><td>maior, menor ou igual</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Com objeto real (p &gt; 0), a fórmula A = −p'/p mostra que <strong>A e p' sempre têm sinais opostos</strong>. Isso cria duas "duplas" que nunca se separam:</p>
+<pre class="diagram">p' &gt; 0 ──► imagem REAL    ──► A &lt; 0 ──► INVERTIDA
+p' &lt; 0 ──► imagem VIRTUAL ──► A &gt; 0 ──► DIREITA
+
+Real anda com invertida.  Virtual anda com direita.
+(para uma lente só e objeto real)</pre>
+
+  <p><strong>Real</strong> quer dizer que a luz chega de verdade naquele lugar: dá para projetar a imagem numa tela, parede ou anteparo. <strong>Virtual</strong> quer dizer que só os prolongamentos dos raios se cruzam ali: você vê a imagem olhando através da lente, mas uma tela colocada nesse ponto fica em branco.</p>
+
+  <div class="box exam">
+    <span class="tag">Palavra-chave de prova</span>
+    <p>"Projetada", "tela", "parede", "anteparo", "filme", "sensor" → imagem <strong>real</strong> → p' &gt; 0 e A &lt; 0. Usar A positivo nesses casos é o erro de sinal mais comum da matéria.</p>
+  </div>
+
+  <!-- 2.7 -->
+  <h3 id="t-casos"><span class="n">2.7</span>Os casos de formação de imagem</h3>
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão:</span>
+    <p>Esta tabela não aparece nas fotos, mas é consequência direta da Equação de Gauss e é o assunto que mais aparece junto com ela. Você pode conferir cada linha no simulador da seção 4.</p>
+  </div>
+
+  <h4>Lente convergente</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Objeto</th><th>Imagem se forma</th><th>Natureza</th><th>Orientação</th><th>Tamanho</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Muito longe</td><td>sobre F'</td><td>real</td><td>invertida</td><td>muito menor</td><td>lupa concentrando luz do Sol</td></tr>
+      <tr><td>Além de A (p &gt; 2f)</td><td>entre F' e A'</td><td>real</td><td>invertida</td><td>menor</td><td>câmera, olho; seu desenho; Q7</td></tr>
+      <tr class="hl"><td>Sobre A (p = 2f)</td><td>sobre A'</td><td>real</td><td>invertida</td><td>igual</td><td>Q9</td></tr>
+      <tr><td>Entre A e F (f &lt; p &lt; 2f)</td><td>além de A'</td><td>real</td><td>invertida</td><td>maior</td><td>projetor; Q11, Q13</td></tr>
+      <tr class="hl"><td>Sobre F (p = f)</td><td>no infinito (imprópria)</td><td>—</td><td>—</td><td>—</td><td>farol, lanterna</td></tr>
+      <tr><td>Entre F e O (p &lt; f)</td><td>do mesmo lado do objeto</td><td>virtual</td><td>direita</td><td>maior</td><td>lupa; Q10</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Lente divergente</h4>
+  <p>Para <strong>qualquer</strong> posição de objeto real: imagem <strong>virtual, direita e menor</strong>, do mesmo lado do objeto, entre o foco e a lente. Exemplo: olho mágico (Q12), óculos para miopia.</p>
+
+  <div class="box exam">
+    <span class="tag">Duas regras para decorar</span>
+    <p><strong>Regra do foco:</strong> objeto antes de F → imagem real; objeto entre F e a lente → imagem virtual.<br>
+    <strong>Regra do 2f:</strong> objeto antes de A → imagem menor; sobre A → igual; entre A e F → maior.</p>
+  </div>
+
+  <!-- 2.8 -->
+  <h3 id="t-metodo"><span class="n">2.8</span>Método de resolução em 5 passos</h3>
+  <ol>
+    <li><strong>Identifique a lente.</strong> Convergente (f &gt; 0) ou divergente (f &lt; 0)? Se o enunciado não diz, f é a incógnita e o sinal dela é a resposta (Q12).</li>
+    <li><strong>Traduza as palavras em sinais.</strong> Use o tradutor abaixo. Escreva os dados com sinal antes de qualquer conta.</li>
+    <li><strong>Use o aumento para ligar p e p'.</strong> De A = −p'/p, escreva p' = −A · p. Isolar multiplicando em cruz evita inverter a fração (o erro da Q11).</li>
+    <li><strong>Substitua na Gauss e resolva.</strong> MMC ou produto sobre soma. Inverta no final.</li>
+    <li><strong>Confira e interprete.</strong> O sinal faz sentido? A unidade faz sentido? A posição bate com a tabela de casos? Escreva a conclusão em palavras (real/virtual, direita/invertida).</li>
+  </ol>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Tradutor de enunciado</th><th>Vira</th></tr></thead>
+    <tbody>
+      <tr><td>"projetada", "tela", "parede", "anteparo"</td><td>p' &gt; 0 e A &lt; 0</td></tr>
+      <tr><td>"lupa", "vista através da lente", "imagem direita"</td><td>p' &lt; 0 e A &gt; 0</td></tr>
+      <tr><td>"n vezes maior"</td><td>|A| = n</td></tr>
+      <tr><td>"n vezes menor"</td><td>|A| = 1/n</td></tr>
+      <tr><td>"distância entre objeto e tela/imagem real"</td><td>p + p'</td></tr>
+      <tr><td>"biconvexa" (no ar)</td><td>f &gt; 0</td></tr>
+      <tr><td>"objeto no foco"</td><td>p = f → imagem imprópria</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ 03 EXEMPLOS ============ -->
+<section class="sec" id="exemplos">
+  <p class="sec-label">03 · Exemplos e analogias</p>
+  <h2 class="sec-title">Analogias, aparelhos do dia a dia e a sua lista resolvida</h2>
+
+  <h3 id="t-analogias"><span class="n">3.1</span>Analogias para fixar</h3>
+  <ul>
+    <li><strong>Sinal como extrato bancário.</strong> No extrato, "150" diz quanto e o sinal diz se é crédito ou débito. Em óptica, |A| = 3 diz "3 vezes" e o sinal diz "direita" ou "invertida". Ler só o número é ler metade da informação.</li>
+    <li><strong>Lente convergente como funil de luz.</strong> Ela pega raios que chegam paralelos e junta todos num ponto (F'). Por isso uma lupa ao Sol pode queimar papel: ali se forma a imagem real do Sol.</li>
+    <li><strong>Real como projetor, virtual como reflexo na janela.</strong> A imagem do projetor aparece na parede porque a luz chega lá. O seu reflexo na janela parece estar "lá fora", mas nenhuma luz chega naquele ponto. Uma tela colocada ali não mostraria nada.</li>
+    <li><strong>O foco como a borda de um precipício.</strong> Enquanto o objeto se aproxima do foco, a imagem corre para cada vez mais longe. Em cima do foco, ela "cai" no infinito. Passando do foco, ela reaparece do outro lado, virtual.</li>
+  </ul>
+
+  <h3 id="t-aparelhos"><span class="n">3.2</span>Onde isso aparece no mundo</h3>
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão:</span>
+    <p>Os aparelhos da tabela são exatamente os contextos que os vestibulares usam para disfarçar a mesma conta.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Aparelho</th><th>Lente</th><th>Posição do objeto</th><th>Imagem</th></tr></thead>
+    <tbody>
+      <tr><td>Câmera fotográfica / olho humano</td><td>convergente</td><td>longe (p &gt; 2f)</td><td>real, invertida, menor, no sensor/retina</td></tr>
+      <tr><td>Projetor</td><td>convergente</td><td>entre A e F</td><td>real, invertida, maior, na tela. O slide entra de cabeça para baixo para a imagem sair em pé.</td></tr>
+      <tr><td>Lupa</td><td>convergente</td><td>entre F e a lente</td><td>virtual, direita, maior</td></tr>
+      <tr><td>Olho mágico</td><td>divergente</td><td>qualquer</td><td>virtual, direita, menor (campo de visão amplo)</td></tr>
+      <tr><td>Óculos para miopia</td><td>divergente</td><td>—</td><td>—</td></tr>
+      <tr><td>Óculos para hipermetropia</td><td>convergente</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="t-lista"><span class="n">3.3</span>Sua lista resolvida, com correção do caderno</h3>
+  <p>Cada questão traz a resolução completa e, em verde, o que estava no seu caderno. As que você já fez estão comparadas passo a passo.</p>
+
+  <div class="box doubt">
+    <span class="tag">Leitura incerta: questão 6</span>
+    <p>No topo da página 2 aparecem só as alternativas <span class="mono">b) 1,0 f · c) 1,5 f · d) 2,0 f · e) 2,5 f</span>. O enunciado da questão 6 ficou fora da foto, então não dá para resolver sem inventar. Se quiser a resolução, mande a foto da página 1.</p>
+  </div>
+
+  <!-- Q7 -->
+  <article class="ex" id="q7">
+    <div class="ex-head"><span class="ex-num">Q7</span><span class="ex-topic">Gauss direta</span><span class="ex-ans">Gabarito: e) 7,5 cm</span></div>
+    <div class="ex-body">
+      <p class="stmt">Lente convergente, f = 6,0 cm, objeto a 30 cm. Qual a distância da imagem à lente?</p>
+<pre class="calc">Dados: f = +6 cm (convergente) · p = 30 cm
+1/f = 1/p + 1/p'
+1/6 = 1/30 + 1/p'
+1/p' = 5/30 − 1/30 = 4/30
+<em>p' = 7,5 cm</em>
+A = −p'/p = −7,5/30 = −0,25</pre>
+      <p><strong>Interpretação:</strong> p' &gt; 0 → imagem real; A = −0,25 → invertida e 4 vezes menor. Objeto além de A (30 &gt; 12), caso da câmera fotográfica.</p>
+      <div class="verdict v-ok"><b>Seu caderno: correto.</b> Você chegou a p' = 30/4 = 7,5 cm pelo MMC. Para provas discursivas, acrescente uma linha classificando a imagem.</div>
+    </div>
+  </article>
+
+  <!-- Q8 -->
+  <article class="ex" id="q8">
+    <div class="ex-head"><span class="ex-num">Q8</span><span class="ex-topic">Distância objeto–imagem</span><span class="ex-ans">Gabarito: e) 9f/2</span></div>
+    <div class="ex-body">
+      <p class="stmt">Objeto real a 3f de uma lente convergente de distância focal f. Qual a distância entre o objeto e a imagem conjugada?</p>
+<pre class="calc">1/f = 1/(3f) + 1/p'
+1/p' = 3/(3f) − 1/(3f) = 2/(3f)
+p' = 3f/2                  (positivo → real → lado oposto ao objeto)
+d = p + p' = 3f + 3f/2 = 6f/2 + 3f/2
+<em>d = 9f/2</em></pre>
+      <p><strong>Por que somar:</strong> a imagem é real, então fica do outro lado da lente. A distância entre os dois é a soma. Se a imagem fosse virtual (mesmo lado do objeto), a distância seria a <strong>diferença</strong> entre |p'| e p.</p>
+      <div class="verdict v-ok"><b>Seu caderno: correto.</b> Montou d = p + p' e chegou a 9f/2. Boa organização com a chave.</div>
+    </div>
+  </article>
+
+  <!-- Q9 -->
+  <article class="ex" id="q9">
+    <div class="ex-head"><span class="ex-num">Q9</span><span class="ex-topic">Imagem do mesmo tamanho</span><span class="ex-ans">Resposta: f = 20 cm</span></div>
+    <div class="ex-body">
+      <p class="stmt">Lente biconvexa. Imagem numa tela a 80 cm do objeto, com o mesmo tamanho do objeto. Qual a distância focal?</p>
+<pre class="calc">Biconvexa no ar → convergente
+Imagem na tela → real → A &lt; 0
+Mesmo tamanho → |A| = 1 → <b>A = −1</b>
+−1 = −p'/p → p' = p
+Tela a 80 cm do OBJETO → p + p' = 80 → 2p = 80
+p = p' = 40 cm
+1/f = 1/40 + 1/40 = 2/40
+<em>f = 20 cm</em></pre>
+      <p><strong>Conferência:</strong> p = 40 = 2f. O objeto está sobre A e a imagem sobre A', como diz a tabela de casos.</p>
+      <div class="box warn" style="margin-block:12px"><span class="tag">Pegadinha da questão</span><p>Os 80 cm são do objeto até a tela (p + p'), não da lente até a tela. Quem usa p' = 80 erra.</p></div>
+      <div class="verdict v-ok"><b>Seu caderno: correto.</b> Você usou p = p' = 40 cm direto e chegou a 20 cm. Numa prova discursiva, escreva a justificativa (A = −1 → p' = p; p + p' = 80), porque é ela que garante os pontos.</div>
+    </div>
+  </article>
+
+  <!-- Q10 -->
+  <article class="ex" id="q10">
+    <div class="ex-head"><span class="ex-num">Q10</span><span class="ex-topic">Lupa do perito</span><span class="ex-ans">a) 8/3 cm · b) virtual, 8 cm, 2,1 cm</span></div>
+    <div class="ex-body">
+      <p class="stmt">Lupa com f = 4,0 cm e fator de ampliação 3,0. Número de série com 0,7 cm de altura. a) A que distância do número a lente deve ficar? b) Onde se forma a imagem e qual o seu tamanho?</p>
+<pre class="calc">Lupa → imagem virtual e direita → <b>A = +3</b>
+Dados: f = +4 cm · o = 0,7 cm
+A = −p'/p → 3 = −p'/p → p' = −3p
+1/4 = 1/p + 1/(−3p) = 3/(3p) − 1/(3p) = 2/(3p)
+3p = 8 → <em>p = 8/3 cm ≈ 2,7 cm</em>          (a)
+p' = −3 · 8/3 → <em>p' = −8 cm</em>
+i = A · o = 3 · 0,7 → <em>i = 2,1 cm</em>          (b)</pre>
+      <p><strong>Resposta do item b em palavras:</strong> a imagem é virtual e direita, forma-se do <strong>mesmo lado do objeto</strong>, a 8 cm da lente, e tem 2,1 cm de altura. Conferência: p ≈ 2,7 cm é menor que f = 4 cm, então o objeto está entre F e a lente, o caso da lupa.</p>
+      <div class="verdict v-warn"><b>Seu caderno: resultado final correto, com um trecho a riscar.</b> No topo você escreveu "o = 3 cm" e circulou "i = 9 cm". O 3 é o fator de ampliação; a altura do objeto é 0,7 cm. Na margem você corrigiu para i = 2,1 cm, que está certo. Risque o i = 9 cm para não estudar pelo valor errado depois. Também falta responder "onde se forma" com palavras (virtual, mesmo lado do objeto).</div>
+    </div>
+  </article>
+
+  <!-- Q11 -->
+  <article class="ex" id="q11">
+    <div class="ex-head"><span class="ex-num">Q11</span><span class="ex-topic">Projeção na parede</span><span class="ex-ans">Gabarito: d) 21d</span></div>
+    <div class="ex-body">
+      <p class="stmt">Lente convergente de distância focal d, entre um objeto e uma parede. Para a imagem ser projetada na parede ampliada 20 vezes, a distância entre a lente e a parede deve ser:</p>
+<pre class="calc">Projetada na parede → real → <b>A = −20</b>
+f = d · distância lente–parede = p'
+A = −p'/p → −20 = −p'/p → −20p = −p' → p' = 20p
+                                          → <em>p = p'/20</em>
+1/d = 1/p + 1/p' = 20/p' + 1/p' = 21/p'
+<em>p' = 21d</em></pre>
+      <p><strong>Pelo atalho</strong> A = (f − p')/f: −20 = (d − p')/d → −20d = d − p' → p' = 21d.</p>
+      <div class="verdict v-bad"><b>Seu caderno: erro de álgebra e resolução incompleta.</b> O sinal estava certo (−20 = −p'/p, muito bem). O erro veio ao isolar p: você escreveu <span class="mono">p = 20/p'</span>, mas o certo é <span class="mono">p = p'/20</span>. Por causa disso, 1/p virou p'/20 em vez de 20/p', e a conta parou em "1/d = p'/20 + 1/p'".</div>
+      <div class="box cad" style="margin-block:12px"><span class="tag">Como pegar esse erro sozinho</span><p><strong>Teste de unidade:</strong> p é uma distância (cm). Já 20/p' tem unidade 1/cm. Uma distância nunca pode ser igual a "1 sobre distância", então p = 20/p' é impossível. Faça esse teste sempre que isolar uma letra.</p><p><strong>Isolar sem erro:</strong> multiplique em cruz primeiro (−20 · p = −p'), depois divida.</p></div>
+    </div>
+  </article>
+
+  <!-- Q12 -->
+  <article class="ex" id="q12">
+    <div class="ex-head"><span class="ex-num">Q12</span><span class="ex-topic">Olho mágico</span><span class="ex-ans">Gabarito: b) divergente, f = −25 cm</span></div>
+    <div class="ex-body">
+      <p class="stmt">Visitante a 50 cm da porta. A lente forma imagem três vezes menor e direita. Qual o tipo de lente e o comprimento focal?</p>
+<pre class="calc">Três vezes menor e direita → <b>A = +1/3</b> · p = 50 cm
+1/3 = −p'/50 → <em>p' = −50/3 cm</em>          (virtual)
+1/f = 1/50 + 1/(−50/3) = 1/50 − 3/50 = −2/50
+<em>f = −25 cm</em> → negativo → divergente</pre>
+      <p><strong>Eliminação rápida:</strong> uma lente convergente, com objeto real, só forma imagem direita quando ela é virtual e <strong>maior</strong>. Imagem direita e menor só pode ser de lente divergente. Isso elimina d) e e) antes de qualquer conta.</p>
+      <div class="verdict v-ok"><b>Seu caderno: correto.</b> A = +1/3, p' = −50/3 e f = 50/(−2) = −25 cm.</div>
+      <div class="box doubt" style="margin-block:12px"><span class="tag">Leitura incerta: nota na margem</span><p>Ao lado da Q12 há uma anotação parcialmente legível, algo como "Até esse ex. p/ prova de …tembro". A interpretação mais provável é que a Q12 marca o limite do conteúdo de uma prova. A Q13 foi resolvida abaixo mesmo assim.</p></div>
+    </div>
+  </article>
+
+  <!-- Q13 -->
+  <article class="ex" id="q13">
+    <div class="ex-head"><span class="ex-num">Q13</span><span class="ex-topic">Imagem 4 vezes maior na tela</span><span class="ex-ans">a) 60 cm · b) 15 cm</span></div>
+    <div class="ex-body">
+      <p class="stmt">Lente convergente de f = 12 cm. Imagem na tela 4 vezes maior que o objeto. a) Distância lente–tela? b) Distância lente–objeto?</p>
+<pre class="calc">Imagem na tela → real → <b>A = −4</b> · f = +12 cm
+−4 = −p'/p → p' = 4p
+1/12 = 1/p + 1/(4p) = 4/(4p) + 1/(4p) = 5/(4p)
+4p = 60 → <em>p = 15 cm</em>                      (b)
+p' = 4 · 15 → <em>p' = 60 cm</em>                    (a)</pre>
+      <p><strong>Conferência:</strong> 12 &lt; 15 &lt; 24, objeto entre F e A, caso do projetor (imagem real, invertida e maior). Pelos atalhos: −4 = 12/(12 − p) → p = 15; −4 = (12 − p')/12 → p' = 60.</p>
+      <div class="verdict v-none"><b>Seu caderno: não resolvida.</b> É o mesmo raciocínio da Q11 com números. Bom exercício para refazer sozinho depois de corrigir a Q11.</div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ 04 ESQUEMAS ============ -->
+<section class="sec" id="esquemas">
+  <p class="sec-label">04 · Esquemas e desenhos</p>
+  <h2 class="sec-title">Veja a imagem se mover</h2>
+
+  <h3 id="t-sim"><span class="n">4.1</span>Simulador de lente</h3>
+  <p>Arraste o objeto e veja a Equação de Gauss funcionando. A lente tem |f| = 10 cm e o objeto tem 6 cm de altura. Os números embaixo são calculados com as mesmas fórmulas da aula.</p>
+
+  <div class="lab" id="lab">
+    <div class="lab-controls">
+      <div class="seg" role="group" aria-label="Tipo de lente">
+        <button type="button" id="btn-conv" aria-pressed="true">Convergente</button>
+        <button type="button" id="btn-div" aria-pressed="false">Divergente</button>
+      </div>
+      <label class="slider" for="p-range">
+        <span>Distância do objeto (p): <b id="p-out">25,0 cm</b></span>
+        <input type="range" id="p-range" min="1" max="45" step="0.5" value="25">
+      </label>
+      <div class="presets" id="presets" role="group" aria-label="Posições prontas do objeto">
+        <button type="button" data-p="32">Além de A</button>
+        <button type="button" data-p="20">Sobre A</button>
+        <button type="button" data-p="14">Entre A e F</button>
+        <button type="button" data-p="10">Sobre F</button>
+        <button type="button" data-p="5">Entre F e O</button>
+      </div>
+      <label class="check" for="ray3"><input type="checkbox" id="ray3" checked> Mostrar 3º raio notável</label>
+    </div>
+    <div class="lab-canvas"><svg id="sim" viewBox="0 0 900 340" role="img" aria-label="Diagrama da lente com objeto, raios e imagem"></svg></div>
+    <div class="readout">
+      <div><span>p</span><b id="r-p">—</b></div>
+      <div><span>p'</span><b id="r-pl">—</b></div>
+      <div><span>A</span><b id="r-a">—</b></div>
+      <div><span>i</span><b id="r-i">—</b></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="case" id="case"></p>
+    <p class="note" id="note" hidden></p>
+  </div>
+
+  <h3 id="t-mapa"><span class="n">4.2</span>Linha dos casos (lente convergente)</h3>
+<pre class="diagram">  luz ─►
+
+  objeto em:  ◄── além de A ──┤ A ├── entre A e F ──┤ F ├── entre F e O ──┤ lente
+                              2f                    f                      O
+  imagem:       real          real       real          ∞        virtual
+                invertida     invertida  invertida    (não se   direita
+                MENOR         IGUAL      MAIOR         forma)   MAIOR
+  aparelho:     câmera        Q9         projetor      farol    lupa</pre>
+
+  <h3 id="t-fluxo"><span class="n">4.3</span>Fluxograma de resolução</h3>
+<pre class="diagram">             ┌─────────────────────────────┐
+             │ Lê o enunciado              │
+             └──────────────┬──────────────┘
+                            ▼
+        ┌── A imagem aparece numa tela/parede? ──┐
+       SIM                                       NÃO / "lupa" / "direita"
+        ▼                                        ▼
+  real: p' &gt; 0, A &lt; 0                      virtual: p' &lt; 0, A &gt; 0
+        └───────────────┬────────────────────────┘
+                        ▼
+            p' = −A · p     (do aumento)
+                        ▼
+            1/f = 1/p + 1/p'   (Gauss)
+                        ▼
+            Inverte no final · confere sinal e unidade
+                        ▼
+            Escreve a conclusão em palavras</pre>
+
+  <h3 id="t-div"><span class="n">4.4</span>Lente divergente em escala</h3>
+  <figure>
+    <div class="fig-wrap"><svg class="ray-static" data-type="div" data-p="25" viewBox="0 0 900 340" role="img" aria-label="Lente divergente: imagem virtual, direita e menor entre o foco e a lente"></svg></div>
+    <figcaption>Lente divergente (f = −10 cm, objeto a 25 cm). Os raios saem abrindo; os prolongamentos tracejados se cruzam do lado do objeto e formam a imagem virtual, direita e menor. É o caso do olho mágico da Q12.</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 05 PEGADINHAS ============ -->
+<section class="sec" id="pegadinhas">
+  <p class="sec-label">05 · Pontos de atenção e pegadinhas</p>
+  <h2 class="sec-title">Onde os pontos costumam ser perdidos</h2>
+  <p>As três primeiras aparecem na sua própria lista. Vale reler esta seção na véspera da prova.</p>
+
+  <ol class="traps">
+    <li><b>Isolar a letra invertendo a fração.</b><p>De −20 = −p'/p sai p = p'/20, e não p = 20/p' (Q11). Multiplique em cruz antes de dividir e faça o teste de unidade: uma distância não pode ser igual a "1 sobre distância".</p></li>
+    <li><b>Trocar o tamanho do objeto por outro número do enunciado.</b><p>Na Q10, o = 0,7 cm; o 3,0 é o fator de ampliação. Antes de começar, liste os dados com nome e unidade.</p></li>
+    <li><b>Confundir o referencial de lentes com o de espelhos.</b><p>Lente: imagem real do lado oposto ao objeto. Espelho: imagem real do mesmo lado. As fórmulas são iguais; a posição da imagem real muda.</p></li>
+    <li><b>Esquecer o sinal de A em imagens projetadas.</b><p>"Ampliação de 20 vezes" numa parede é A = −20. Imagem em tela é real, e imagem real (de objeto real) é sempre invertida.</p></li>
+    <li><b>Ler "n vezes menor" como A = n.</b><p>"Três vezes menor" é |A| = 1/3 (Q12). Só depois decida o sinal: direita → +1/3.</p></li>
+    <li><b>Achar que "imagem maior" é "i &gt; 0".</b><p>Maior é |i| &gt; o. O sinal de i fala de orientação. A = −3 dá i negativo e imagem 3 vezes maior.</p></li>
+    <li><b>Somar frações errado.</b><p>1/p + 1/p' não é 1/(p + p'). Use MMC ou o produto sobre soma.</p></li>
+    <li><b>Parar em 1/p'.</b><p>Achar 1/p' = 4/30 não é a resposta. Inverta: p' = 30/4.</p></li>
+    <li><b>Usar a distância objeto–tela como p'.</b><p>Na Q9, 80 cm é p + p'. A distância lente–tela é só p'.</p></li>
+    <li><b>Somar p e p' quando a imagem é virtual.</b><p>Objeto e imagem virtual ficam do mesmo lado; a distância entre eles é a diferença, não a soma.</p></li>
+    <li><b>Supor que biconvexa é sempre convergente.</b><p>Só no caso comum (lente mais refringente que o meio, como vidro no ar). Numa questão com lente dentro de outro meio, verifique os índices.</p></li>
+    <li><b>Dizer que objeto no foco dá p' = 0.</b><p>Objeto no foco dá 1/p' = 0, ou seja, p' infinito: imagem imprópria. p' = 0 significaria imagem colada na lente.</p></li>
+    <li><b>Misturar cm e m.</b><p>A Gauss funciona em qualquer unidade, desde que todas sejam a mesma. O cuidado dobra quando aparece vergência em dioptrias, que exige metros.</p></li>
+    <li><b>Não aproveitar a eliminação qualitativa.</b><p>Lente divergente com objeto real só forma imagem virtual, direita e menor. Alternativa com "divergente" e imagem maior já está errada (Q12).</p></li>
+  </ol>
+</section>
+
+<!-- ============ 06 PROVA ============ -->
+<section class="sec" id="prova">
+  <p class="sec-label">06 · O que mais cai em prova</p>
+  <h2 class="sec-title">Os formatos que se repetem</h2>
+  <p>A mesma conta aparece com vários disfarces. Estes são os formatos recorrentes em vestibulares como FUVEST, Unicamp e Unesp, e em provas escolares que se inspiram neles:</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Formato</th><th>O que pedem</th><th>Chave</th><th>Na sua lista</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Projeção em tela</strong></td><td>distância lente–tela, posição do objeto, f</td><td>A negativo; p' = −A·p</td><td>Q9, Q11, Q13</td></tr>
+      <tr><td><strong>Lupa</strong></td><td>onde pôr a lente, tamanho da imagem</td><td>A positivo; p' negativo</td><td>Q10</td></tr>
+      <tr><td><strong>Descobrir o tipo de lente</strong></td><td>convergente ou divergente e o valor de f</td><td>sinal de f</td><td>Q12</td></tr>
+      <tr><td><strong>Gauss direta</strong></td><td>p' a partir de f e p</td><td>MMC, inverter no final</td><td>Q7</td></tr>
+      <tr><td><strong>Resposta literal</strong></td><td>resultado em função de f ou d</td><td>tratar f como número</td><td>Q8, Q11</td></tr>
+      <tr><td><strong>Classificar a imagem</strong></td><td>real/virtual, direita/invertida, maior/menor</td><td>sinais de p' e A, módulo de A</td><td>Q10b, Q12</td></tr>
+      <tr><td><strong>Distância objeto–imagem</strong></td><td>d = p + p' (imagem real)</td><td>lados opostos da lente</td><td>Q8, Q9</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box exam">
+    <span class="tag">Em provas discursivas (2ª fase)</span>
+    <p>A banca corrige o raciocínio, não só o número. Escreva: (1) a tradução do enunciado em sinais ("imagem projetada → real → A = −4"), (2) as equações usadas, (3) a conclusão em palavras. Essas três linhas separam a nota cheia da nota parcial.</p>
+  </div>
+
+  <div class="box comp">
+    <span class="tag">Complemento para melhor compreensão: o que costuma vir junto</span>
+    <p><strong>Vergência (V = 1/f)</strong>, medida em dioptrias (di) com f em metros, é o "grau" dos óculos. Uma lente de f = 0,5 m tem V = +2 di. <strong>Equação dos fabricantes</strong> (ou de Halley), que liga f aos raios de curvatura e aos índices de refração, e <strong>associação de lentes</strong> também aparecem na sequência deste conteúdo. Nenhum dos três está nas suas fotos; o vídeo de estudo analítico do Prof. Boaro, na próxima seção, cobre a equação dos fabricantes.</p>
+  </div>
+</section>
+
+<!-- ============ 07 VÍDEOS ============ -->
+<section class="sec" id="videos">
+  <p class="sec-label">07 · Vídeos completos no YouTube</p>
+  <h2 class="sec-title">Aulas para rever o conteúdo</h2>
+  <p>Cada botão abre o vídeo exato. Todos foram conferidos em 25/09/2026: existem e estavam públicos. A ordem sugerida segue a desta aula.</p>
+
+  <h4>Trilha principal: Professor Boaro</h4>
+  <div class="vid">
+    <div><div class="ch">Professor Boaro · Aula 13</div><h5>Lentes Esféricas I: tipos de lentes</h5><p>Base: tipos de lentes, convergentes e divergentes (seção 2.1).</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=sJTrdArAeKY" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+  <div class="vid">
+    <div><div class="ch">Professor Boaro · Aula 14</div><h5>Lentes Esféricas II: formação de imagens</h5><p>Formação de imagens pelo método gráfico (seções 2.2 e 2.7).</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=8i_GgkLJ2IQ" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+  <div class="vid">
+    <div><div class="ch">Professor Boaro · Aula 15</div><h5>Lentes Esféricas III: estudo analítico e equação dos fabricantes</h5><p>Equação de Gauss e aumento linear (seções 2.4 e 2.5), mais a equação dos fabricantes.</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=_O7mg70DWHU" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+
+  <h4>Outras explicações de Gauss e do aumento</h4>
+  <div class="vid">
+    <div><div class="ch">Davi Oliveira · Física 2.0</div><h5>Lentes Esféricas, Aula 04: Equação de Gauss</h5><p>Segunda explicação da equação, útil se algum passo da seção 2.4 não ficou claro.</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=x0w9mony8Q0" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+  <div class="vid">
+    <div><div class="ch">Prof. Eduardo Cavalcanti · Física e Vestibular</div><h5>Lentes esféricas e delgadas: Equação de Gauss</h5><p>Gauss aplicada a lentes delgadas, com foco em vestibular.</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=GSfrm-QIKGE" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+  <div class="vid">
+    <div><div class="ch">Prof. Eduardo Cavalcanti · Física e Vestibular</div><h5>Lentes esféricas: aumento linear transversal</h5><p>Aula dedicada ao aumento A = i/o = −p'/p (seção 2.5).</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=Nt9HFIrMtUE" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+
+  <h4>Treino com exercícios</h4>
+  <div class="vid">
+    <div><div class="ch">Física e Exercício</div><h5>5 exercícios de lentes esféricas: Gauss, aumento, formação de imagens e raios notáveis</h5><p>Bom para fazer depois da seção 3.3: pause antes de cada resolução e tente sozinho.</p></div>
+    <a class="btn" href="https://www.youtube.com/watch?v=aaGa7lr0Pk8" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 L10 6 L0 12 Z"/></svg>Assistir</a>
+  </div>
+</section>
+
+<!-- ============ 08 REVISÃO ============ -->
+<section class="sec" id="revisao">
+  <p class="sec-label">08 · Revisão final</p>
+  <h2 class="sec-title">O essencial em uma página</h2>
+
+  <div class="sumgrid">
+    <div class="sumcard">
+      <h4>Equação de Gauss</h4>
+      <div class="eq"><span class="frac"><span>1</span><span><i>f</i></span></span> = <span class="frac"><span>1</span><span><i>p</i></span></span> + <span class="frac"><span>1</span><span><i>p'</i></span></span></div>
+      <p>Onde a imagem se forma. Atalho: f = p·p'/(p + p').</p>
+    </div>
+    <div class="sumcard">
+      <h4>Aumento linear</h4>
+      <div class="eq"><i>A</i> = <span class="frac"><span><i>i</i></span><span><i>o</i></span></span> = <span class="frac"><span>−<i>p'</i></span><span><i>p</i></span></span></div>
+      <p>Sinal → orientação. Módulo → tamanho.</p>
+    </div>
+    <div class="sumcard">
+      <h4>Sinais</h4>
+      <ul>
+        <li>f &gt; 0 convergente · f &lt; 0 divergente</li>
+        <li>p' &gt; 0 real · p' &lt; 0 virtual</li>
+        <li>A &gt; 0 direita · A &lt; 0 invertida</li>
+        <li>|A| &gt; 1 maior · |A| &lt; 1 menor</li>
+      </ul>
+    </div>
+    <div class="sumcard">
+      <h4>Casos-chave</h4>
+      <ul>
+        <li>p &gt; 2f → real, invertida, menor</li>
+        <li>p = 2f → real, invertida, igual</li>
+        <li>f &lt; p &lt; 2f → real, invertida, maior</li>
+        <li>p &lt; f → virtual, direita, maior</li>
+        <li>divergente → virtual, direita, menor</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="t-frases"><span class="n">8.1</span>Dez frases para lembrar</h3>
+  <ol>
+    <li>O sinal de f é a identidade da lente.</li>
+    <li>p e p' são medidos a partir do centro óptico O.</li>
+    <li>Em lentes, imagem real fica do lado oposto ao objeto.</li>
+    <li>Real anda com invertida; virtual anda com direita.</li>
+    <li>Imagem em tela é real, então A é negativo.</li>
+    <li>"n vezes menor" é |A| = 1/n.</li>
+    <li>Tamanho se compara com módulo: |i| com o.</li>
+    <li>Na Gauss, inverta no final.</li>
+    <li>Ao isolar, multiplique em cruz e confira a unidade.</li>
+    <li>Objeto no foco: imagem imprópria. Objeto em 2f: imagem em 2f, do mesmo tamanho.</li>
+  </ol>
+
+  <h3 id="t-teste"><span class="n">8.2</span>Mini-teste</h3>
+  <p>Resolva no papel antes de abrir a resposta.</p>
+
+  <details class="q"><summary>1. Lente convergente, f = 20 cm, objeto a 60 cm. Onde fica a imagem e como ela é?</summary>
+    <div class="ans"><pre class="calc">1/p' = 1/20 − 1/60 = 3/60 − 1/60 = 2/60 → <em>p' = 30 cm</em>
+A = −30/60 = <em>−0,5</em></pre><p>Real, invertida, com metade do tamanho do objeto (p &gt; 2f).</p></div>
+  </details>
+  <details class="q"><summary>2. Uma lente forma, de um objeto real, imagem direita e 2 vezes maior. Ela é convergente ou divergente?</summary>
+    <div class="ans"><p><strong>Convergente.</strong> Imagem direita de objeto real é virtual. A divergente só forma imagens virtuais menores; a convergente forma imagem virtual maior quando o objeto está entre F e a lente.</p></div>
+  </details>
+  <details class="q"><summary>3. Lente de f = 15 cm forma imagem virtual 3 vezes maior. Qual o valor de p e de p'?</summary>
+    <div class="ans"><pre class="calc">Virtual → A = +3 → p' = −3p
+1/15 = 1/p − 1/(3p) = 2/(3p) → 3p = 30 → <em>p = 10 cm</em>
+<em>p' = −30 cm</em></pre></div>
+  </details>
+  <details class="q"><summary>4. Lente divergente, f = −10 cm, objeto a 10 cm. Calcule p' e A.</summary>
+    <div class="ans"><pre class="calc">1/p' = −1/10 − 1/10 = −2/10 → <em>p' = −5 cm</em>
+A = −(−5)/10 = <em>+0,5</em></pre><p>Virtual, direita, metade do tamanho: o padrão de toda lente divergente.</p></div>
+  </details>
+  <details class="q"><summary>5. Objeto e tela estão a 90 cm um do outro. Uma lente entre eles projeta imagem nítida 2 vezes maior. Qual o f?</summary>
+    <div class="ans"><pre class="calc">Tela → real → A = −2 → p' = 2p
+p + p' = 90 → 3p = 90 → p = 30 cm · p' = 60 cm
+f = p·p'/(p + p') = 1800/90 = <em>20 cm</em></pre></div>
+  </details>
+  <details class="q"><summary>6. Verdadeiro ou falso: "|A| &gt; 1 significa que i &gt; 0".</summary>
+    <div class="ans"><p><strong>Falso.</strong> |A| &gt; 1 significa |i| &gt; o (imagem maior). O sinal de i indica orientação: com A = −2, a imagem é maior e invertida (i &lt; 0).</p></div>
+  </details>
+  <details class="q"><summary>7. Verdadeiro ou falso: "Com objeto real, toda imagem real formada por uma lente é invertida".</summary>
+    <div class="ans"><p><strong>Verdadeiro.</strong> Com p &gt; 0 e p' &gt; 0, A = −p'/p é negativo.</p></div>
+  </details>
+  <details class="q"><summary>8. O que acontece com a imagem quando o objeto está exatamente no foco de uma lente convergente?</summary>
+    <div class="ans"><p>1/p' = 1/f − 1/f = 0, então p' tende ao infinito. Os raios saem paralelos e a imagem é <strong>imprópria</strong>. Confira no simulador com o botão "Sobre F".</p></div>
+  </details>
+
+  <h3 id="t-diag"><span class="n">8.3</span>Diagnóstico do seu caderno</h3>
+  <p>Avaliação do que aparece nas fotos: as anotações e as resoluções da lista.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Item</th><th>Situação</th><th>O que fazer</th></tr></thead>
+    <tbody>
+      <tr><td>Obs. (tabela de sinais)</td><td>Bom, 1 ajuste</td><td>Trocar "i &gt; o" por "|i| &gt; o" (e confirmar se era o ou zero)</td></tr>
+      <tr><td>Referencial de Gauss</td><td>Revisar</td><td>Setas de p' estão no arranjo de espelhos; conferir com o professor</td></tr>
+      <tr><td>Desenho da Equação de Gauss</td><td>Correto</td><td>Raios bem escolhidos; caso p &gt; 2f coerente</td></tr>
+      <tr><td>Q7, Q8, Q12</td><td>Corretas</td><td>Em provas discursivas, fechar com a conclusão em palavras</td></tr>
+      <tr><td>Q9</td><td>Correta</td><td>Escrever a justificativa de p = p'</td></tr>
+      <tr><td>Q10</td><td>Correta no final</td><td>Riscar "o = 3 cm / i = 9 cm"; responder "onde" em palavras</td></tr>
+      <tr><td>Q11</td><td>Erro de álgebra, incompleta</td><td>Refazer: p = p'/20 → p' = 21d</td></tr>
+      <tr><td>Q13</td><td>Não resolvida</td><td>Fazer sozinho e comparar com a seção 3.3</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="grade">
+    <div class="n">7,5<small>/10</small></div>
+    <div>
+      <div class="cap">Nota hipotética do material</div>
+      <p>Anotações organizadas e 5 de 6 questões tentadas com resultado certo. O que impede o 10: o erro de isolamento na Q11 (e a questão parada no meio), a Q13 sem resolução, o sentido de p' trocado no referencial, o "i &gt; 0" sem módulo e a falta de conclusões escritas em palavras. Corrigindo a Q11, fazendo a Q13 e ajustando as duas linhas das Obs., o material fica pronto para prova.</p>
+    </div>
+  </div>
+
+  <p class="foot">Aula construída a partir de 4 fotos: 2 páginas do caderno (Obs., Referencial de Gauss, Equação de Gauss, Aumento linear) e 2 páginas da lista (questões 7 a 13). Tudo o que não estava nas fotos está marcado como "Complemento para melhor compreensão".</p>
+</section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  /* ---------- progresso de leitura ---------- */
+  var bar = document.getElementById('bar');
+  var ticking = false;
+  function prog(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(prog); } }, {passive:true});
+  prog();
+
+  /* ---------- sumário com destaque da seção atual ---------- */
+  var toc = document.querySelector('.toc');
+  var links = {};
+  document.querySelectorAll('.toc a').forEach(function(a){ links[a.getAttribute('href').slice(1)] = a; });
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        Object.keys(links).forEach(function(k){ links[k].classList.remove('on'); });
+        var a = links[e.target.id];
+        if(!a) return;
+        a.classList.add('on');
+        if(toc.scrollWidth > toc.clientWidth + 4){
+          toc.scrollTo({left: a.offsetLeft - toc.clientWidth/2 + a.offsetWidth/2, behavior:'smooth'});
+        }
+      });
+    }, {rootMargin:'-30% 0px -65% 0px'});
+    document.querySelectorAll('main section.sec').forEach(function(s){ io.observe(s); });
+  }
+
+  /* ---------- óptica ---------- */
+  var W = 900, YA = 170, XL = 450, S = 9, OH = 6, FABS = 10, XEND = W + 30;
+
+  function fmt(v, d){
+    if(!isFinite(v)) return '∞';
+    var s = v.toFixed(d === undefined ? 1 : d);
+    if(/^-0(\.0+)?$/.test(s)) s = s.slice(1);
+    return s.replace('.', ',').replace('-', '−');
+  }
+  function solve(type, p){
+    var f = type === 'conv' ? FABS : -FABS;
+    if(Math.abs(p - f) < 1e-9) return {f:f, p:p, inf:true};
+    var pl = p * f / (p - f), A = -pl / p;
+    return {f:f, p:p, pl:pl, A:A, i:A * OH, inf:false};
+  }
+  function L(x1,y1,x2,y2,c){ return '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" class="'+c+'"/>'; }
+  function T(x,y,t,c,a){ return '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" class="'+c+'"'+(a?' text-anchor="'+a+'"':'')+'>'+t+'</text>'; }
+  function arrow(x, y0, y1, dashed){
+    var up = y1 < y0, h = Math.min(10, Math.abs(y1 - y0));
+    var out = L(x, y0, x, y1 + (up ? h*0.6 : -h*0.6), 's-obj' + (dashed ? ' s-dash' : ''));
+    var b = up ? y1 + h : y1 - h;
+    out += '<polygon points="'+(x-6)+','+b.toFixed(1)+' '+x+','+y1.toFixed(1)+' '+(x+6)+','+b.toFixed(1)+'" class="s-objfill"/>';
+    return out;
+  }
+
+  function draw(svg, type, p, show3){
+    var r = solve(type, p), f = r.f, fa = FABS * S, g = '';
+    var conv = type === 'conv';
+    g += L(0, YA, W, YA, 's-ax');
+    [[XL - fa, conv ? 'F' : "F'"], [XL + fa, conv ? "F'" : 'F'], [XL - 2*fa, conv ? 'A' : "A'"], [XL + 2*fa, conv ? "A'" : 'A']].forEach(function(t){
+      g += L(t[0], YA - 6, t[0], YA + 6, 's-tick') + T(t[0], YA + 28, t[1], 't-lbl', 'middle');
+    });
+    var top = YA - 150, bot = YA + 150;
+    g += L(XL, top, XL, bot, 's-lens');
+    if(conv){
+      g += '<polyline points="'+(XL-10)+','+(top+12)+' '+XL+','+top+' '+(XL+10)+','+(top+12)+'" class="s-lens"/>';
+      g += '<polyline points="'+(XL-10)+','+(bot-12)+' '+XL+','+bot+' '+(XL+10)+','+(bot-12)+'" class="s-lens"/>';
+    } else {
+      g += '<polyline points="'+(XL-10)+','+(top-10)+' '+XL+','+top+' '+(XL+10)+','+(top-10)+'" class="s-lens"/>';
+      g += '<polyline points="'+(XL-10)+','+(bot+10)+' '+XL+','+bot+' '+(XL+10)+','+(bot+10)+'" class="s-lens"/>';
+    }
+    g += T(XL + 8, YA + 22, 'O', 't-lens');
+
+    var xo = XL - p * S, yT = YA - OH * S;
+
+    /* raio 1: paralelo ao eixo */
+    g += L(xo, yT, XL, yT, 's-ray');
+    var d1x = Math.abs(f) * S, d1y = (f > 0 ? 1 : -1) * (YA - yT), t1 = (XEND - XL) / d1x;
+    g += L(XL, yT, XL + t1 * d1x, yT + t1 * d1y, 's-ray');
+    /* raio 2: pelo centro óptico */
+    var d2x = XL - xo, d2y = YA - yT, t2 = (XEND - xo) / d2x;
+    g += L(xo, yT, xo + t2 * d2x, yT + t2 * d2y, 's-ray');
+    /* raio 3: pelo foco objeto, sai paralelo */
+    var xF = XL - f * S, y3 = null;
+    if(show3 && !r.inf && Math.abs(xo - xF) > 1e-6){
+      y3 = YA + (yT - YA) * (XL - xF) / (xo - xF);
+      g += L(xo, yT, XL, y3, 's-ray3') + L(XL, y3, XEND, y3, 's-ray3');
+    }
+
+    if(!r.inf){
+      var xI = XL + r.pl * S, yI = YA - r.i * S, virt = r.pl < 0;
+      if(virt){
+        if(conv){ g += L(XL, yT, xI, yI, 's-ray s-dash') + L(XL, YA, xI, yI, 's-ray s-dash'); }
+        else { g += L(XL, yT, XL + f * S, YA, 's-ray s-dash'); }
+        if(y3 !== null) g += L(XL, y3, xI, yI, 's-ray3 s-dash');
+      }
+      g += arrow(xI, YA, yI, virt);
+      g += T(xI + (virt ? 12 : -12), (YA + yI) / 2 + 5, 'i', 't-obj', virt ? 'start' : 'end');
+    }
+    g += arrow(xo, YA, yT, false);
+    g += T(xo - 12, (YA + yT) / 2 + 5, 'o', 't-obj', 'end');
+    svg.innerHTML = g;
+    return r;
+  }
+
+  document.querySelectorAll('svg.ray-static').forEach(function(svg){
+    draw(svg, svg.getAttribute('data-type'), parseFloat(svg.getAttribute('data-p')), true);
+  });
+
+  /* ---------- simulador ---------- */
+  var sim = document.getElementById('sim');
+  if(!sim) return;
+  var state = {type:'conv', p:25, show3:true};
+  var range = document.getElementById('p-range'), pOut = document.getElementById('p-out');
+  var bConv = document.getElementById('btn-conv'), bDiv = document.getElementById('btn-div');
+  var presets = document.getElementById('presets'), cb = document.getElementById('ray3');
+  var el = function(id){ return document.getElementById(id); };
+
+  function describe(r){
+    if(r.f < 0) return 'Lente divergente: para qualquer objeto real, a imagem é virtual, direita e menor, do mesmo lado do objeto, entre o foco e a lente. É o olho mágico da Q12.';
+    var f = r.f, p = r.p, e = 1e-9;
+    if(r.inf) return 'Objeto sobre o foco: os raios saem paralelos e não se cruzam. Imagem imprópria (no infinito).';
+    if(p > 2*f + e) return 'Objeto além de A (p > 2f): imagem real, invertida e menor, entre F\' e A\'. Caso da câmera fotográfica e do seu desenho do caderno.';
+    if(Math.abs(p - 2*f) < e) return 'Objeto sobre A (p = 2f): imagem real, invertida e do mesmo tamanho, sobre A\'. É a situação da Q9.';
+    if(p > f) return 'Objeto entre A e F: imagem real, invertida e maior, além de A\'. Caso do projetor (Q11 e Q13).';
+    return 'Objeto entre F e a lente: imagem virtual, direita e maior, do mesmo lado do objeto. Caso da lupa (Q10).';
+  }
+
+  function update(){
+    var r = draw(sim, state.type, state.p, state.show3);
+    pOut.textContent = fmt(state.p) + ' cm';
+    el('r-p').textContent = fmt(state.p) + ' cm';
+    var chips = '', note = '';
+    if(r.inf){
+      el('r-pl').textContent = '∞'; el('r-a').textContent = '—'; el('r-i').textContent = '—';
+      chips = '<span class="chip inf">Imagem imprópria</span>';
+    } else {
+      el('r-pl').textContent = fmt(r.pl) + ' cm';
+      el('r-a').textContent = fmt(r.A, 2);
+      el('r-i').textContent = fmt(r.i) + ' cm';
+      var abs = Math.abs(r.A);
+      chips += r.pl > 0 ? '<span class="chip real">Real (p\' &gt; 0)</span>' : '<span class="chip virt">Virtual (p\' &lt; 0)</span>';
+      chips += r.A > 0 ? '<span class="chip dir">Direita (A &gt; 0)</span>' : '<span class="chip inv">Invertida (A &lt; 0)</span>';
+      chips += '<span class="chip size">' + (Math.abs(abs - 1) < 1e-9 ? 'Mesmo tamanho (|A| = 1)' : abs > 1 ? 'Maior (|A| &gt; 1)' : 'Menor (|A| &lt; 1)') + '</span>';
+      var xI = XL + r.pl * S, yI = YA - r.i * S;
+      if(xI > W || xI < 0) note = 'A imagem está fora do quadro: a ' + fmt(Math.abs(r.pl)) + ' cm da lente. Os raios continuam se cruzando lá.';
+      else if(Math.abs(yI - YA) > 165) note = 'A imagem é mais alta que o quadro (i = ' + fmt(r.i) + ' cm).';
+    }
+    el('chips').innerHTML = chips;
+    el('case').textContent = describe(r);
+    var n = el('note'); n.textContent = note; n.hidden = !note;
+  }
+
+  range.addEventListener('input', function(){ state.p = parseFloat(range.value); update(); });
+  cb.addEventListener('change', function(){ state.show3 = cb.checked; update(); });
+  function setType(t){
+    state.type = t;
+    bConv.setAttribute('aria-pressed', t === 'conv'); bDiv.setAttribute('aria-pressed', t === 'div');
+    presets.hidden = t !== 'conv';
+    update();
+  }
+  bConv.addEventListener('click', function(){ setType('conv'); });
+  bDiv.addEventListener('click', function(){ setType('div'); });
+  presets.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-p]'); if(!b) return;
+    state.p = parseFloat(b.getAttribute('data-p')); range.value = state.p; update();
+  });
+  state.p = parseFloat(range.value) || 25;
+  state.show3 = cb.checked;
+  update();
+})();
+</script>
+
+</body>
+</html>
